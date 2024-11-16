@@ -9,21 +9,37 @@ bot = Bot(token = api)                                  #Дальше понад
 dp = Dispatcher(bot, storage = MemoryStorage())          #Понадобится «Dispatcher», который будет объектом «Dispatcher», у него будет наш бот в качестве аргументов. В качестве «Storage» будет «MemoryStorage»
 
 class UserState(StatesGroup):
-    address = State()
+    age = State()
+    growth = State()
+    weight = State()
 
-@dp.message_handler(text = 'Заказать')
-async def buy(message):
-    await message.answer("Отправь нам свой адрес, пожалуйста")  #ожидание получения сообщения от пользователя
-    await UserState.address.set()                               #для установки состояния и записи адреса
+@dp.message_handler(text = 'Calories')
+async def set_age(message):
+    await message.answer("Введите свой возраст:")  #ожидание получения сообщения от пользователя
+    await UserState.age.set()                                   #для установки состояния и записи адреса
 
-@dp.message_handler(state=UserState.address)                    #обработано не обычным хендлером, а хендлером состояния «@dp.message_handler()».
-async def sm_handler(message, state):                        #когда хендлер сработает, вы получите два объекта: «message» и «state», который представляет текущее состояние пользователя
+@dp.message_handler(state=UserState.age)                       #обработано не обычным хендлером, а хендлером состояния «@dp.message_handler()».
+async def set_growth(message, state):                          #когда хендлер сработает, вы получите два объекта: «message» и «state», который представляет текущее состояние пользователя
     await state.update_data(first=message.text)                             #позволяет обновить данные, связанные с текущим состоянием пользователя
     data = await state.get_data()                                    #метод позволяет вернуть все данные, связанные с текущим состоянием пользователя
-    await message.answer(f"Доставка будет отправлена на {data['first']}")    #вывести адрес, сохраненный под ключом «first»
-    await state.finish()                                                   #машина состояний завершила работу, ее необходимо закрыть с помощью метода
-    
+    await message.answer(f'Введите свой рост:')
+    await UserState.growth.set()
 
+@dp.message_handler(state=UserState.growth)                   # обработано не обычным хендлером, а хендлером состояния «@dp.message_handler()».
+async def set_weight(message,state):                   # когда хендлер сработает, вы получите два объекта: «message» и «state», который представляет текущее состояние пользователя
+    await state.update_data(second=message.text)            # позволяет обновить данные, связанные с текущим состоянием пользователя
+    data = await state.get_data()                          # метод позволяет вернуть все данные, связанные с текущим состоянием пользователя
+    await message.answer(f'Введите свой вес:')
+    await UserState.weight.set()
+
+@dp.message_handler(state=UserState.weight)               # обработано не обычным хендлером, а хендлером состояния «@dp.message_handler()».
+async def send_calories(message,state):                   # когда хендлер сработает, вы получите два объекта: «message» и «state», который представляет текущее состояние пользователя
+    await state.update_data(third=message.text)           # позволяет обновить данные, связанные с текущим состоянием пользователя
+    data = await state.get_data()                         # метод позволяет вернуть все данные, связанные с текущим состоянием пользователя
+    result=round(10*int(data['first']) + 6,25*int(data['second'])-5*int(data['third']) + 5)
+    await message.answer(result)
+    await UserState.weight.set()
+    await state.finish()                                                   #машина состояний завершила работу, ее необходимо закрыть с помощью метода
 
 
 
